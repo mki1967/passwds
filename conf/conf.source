@@ -1,0 +1,26 @@
+# Server and Client configuration:
+  export PASSWDS_SERVER_DIR="${PASSWDS_BASE}/server"
+  export PASSWDS_SERVER_DB_DIR="${PASSWDS_SERVER_DIR}/database"
+
+
+# Client configuration:
+  export PASSWDS_CLIENT_DIR="${PASSWDS_BASE}/client"
+  export PASSWDS_CLIENT_DB_DIR="${PASSWDS_CLIENT_DIR}/database"
+  export PASSWDS_CLIENT_NEW_DIR="${PASSWDS_CLIENT_DIR}/new"
+
+# Uncomment and/or edit the followig exports:
+
+# Server's USER, IP and PORT from Client's viewpoint
+  export PASSWDS_C_S_IP="127.0.0.1"
+  export PASSWDS_C_S_PORT="22"
+  export PASSWDS_C_S_USER="${USER}"
+  export PASSWDS_C_S_USER_AT_IP="${PASSWDS_C_S_USER}@${PASSWDS_C_S_IP}"
+
+# Versions of Client's `rsync`:
+  export PASSWDS_CLIENT_LOCAL_RSYNC="rsync -a ${PASSWDS_SERVER_DB_DIR} ${PASSWDS_CLIENT_NEW_DIR}"
+  export PASSWDS_CLIENT_SSH_RSYNC="rsync -a -e 'ssh -p ${PASSWDS_C_S_PORT}' ${PASSWDS_C_S_USER_AT_IP}:${PASSWDS_SERVER_DB_DIR} ${PASSWDS_CLIENT_NEW_DIR}"
+
+# Uncomment one for actual version of `rsync` to be used:
+  export PASSWDS_CLIENT_RSYNC=${PASSWDS_CLIENT_LOCAL_RSYNC} # useful for local tests
+#  export PASSWDS_CLIENT_RSYNC=${PASSWDS_CLIENT_SSH_RSYNC}
+

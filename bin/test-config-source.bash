@@ -1,8 +1,10 @@
 #!/bin/bash
 
 # Any script from this ${BIN} should start with the following two lines:
-BIN=$(dirname "$(realpath ${0})")
+# BIN=$(dirname "$(realpath ${0})")
+# source ${BIN}/config-source.bash
 
+BIN=$(dirname "$(realpath ${0})")
 echo $'\n'"TEST 1 - the first: source ${BIN}/config-source.bash"
 source ${BIN}/config-source.bash
 export | grep '\-x\ PASSWDS_'

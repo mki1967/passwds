@@ -1,8 +1,10 @@
 #!/bin/bash
 
-export BIN=$(dirname "$(realpath ${0})")
-export BASE=$(realpath "${BIN}/..")
-source ${BASE}/conf/conf.source
+# check for argument:
+USERNAME=${1? "Brak argumentu USERNAME"}
+
+BIN=$(dirname "$(realpath ${0})")
+source ${BIN}/config-source.bash
 
 
 # TODO: przerobić z `r2-shell.bin`
@@ -12,10 +14,6 @@ then
   echo "NIEDOZWOLONE: ${SSH_ORIGINAL_COMMAND}"
   exit ;
 fi;
-
-# to be run by the user 'auth' when a student logs in
-# set paths in  variables
-source /p210/bin/set-paths.source
 
 echo
 echo '*** Weryfikacja ***'
@@ -27,14 +25,12 @@ then
   exit;
 fi
 
-mkdir -p ${AUTH};
+mkdir -p ${PASSWDS_SERVER_DB_DIR};
 echo
 echo 'Wprowadź i powtórz nowe hasło:'
 echo
 stty -echo;
-NEW='/home/auth/new'
-mkdir -p ${NEW}
-htpasswd -c ${NEW}'/'${1}'.auth' ${1};
+openssl passwd -6 > "${PASSWDS_SERVER_DB_DIR}/${1}";
 if [[ $? != 0 ]];
 then
  echo
@@ -44,20 +40,5 @@ then
 fi
 stty echo;
 
-REPO_IP=10.252.16.1 # sprawdź na repo poleceniem: ip a
-ssh auth@${REPO_IP} &> /dev/null  # transfer of '${NEW}/*' to 'repo:/p210/auth/'
-echo
-mv ${NEW}'/'${1}'.auth' ${AUTH}'/'${1}'.auth'  # clean ${NEW}: move ${1}'.auth' file to the archive ${AUTH}
-
-echo "Nowe hasło zostało ustawione."
-# cat ${AUTH}'/'${1}'.auth'
-echo
-
-REPO_URL="https://repo.cs.pwr.edu.pl/${1}"
-
-# echo "Spróbuj otworzyć stronę: ${REPO_URL}"
-echo "Dostęp przez plrzeglądarkę i klienta SVN"
-echo "jako użytkownik: ${1}"
-echo "podając hasło, które ustawiłeś."
-echo
-
+echo "Nowe hasło zostało wprowadzone do serwera."
+echo "Na docelowych maszynach zostanie ustawione przy następnej synchronizacji."

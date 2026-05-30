@@ -1,7 +1,7 @@
 #!/bin/bash
 if [[ ! -v PASSWDS_CONFIGURED ]];
 then  
-  echo "${0}: setting PASSWORDS_* ..."
+  # echo "${0}: setting PASSWORDS_* ..."  # for tests only
   export PASSWDS_BIN=$(dirname "$(realpath ${0})")
   export PASSWDS_BASE=$(realpath "${PASSWDS_BIN}/..")
   export PATH="${PASSWDS_BIN}:${PATH}"
