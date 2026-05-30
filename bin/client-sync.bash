@@ -14,5 +14,5 @@ ${PASSWDS_CLIENT_RSYNC}
 # TODO: find the new or changed positions and update the passwords and database 
 
 # find new or changed elements
- LANG=C diff -q  ${PASSWDS_CLIENT_NEW_DIR} ${PASSWDS_CLIENT_DB_DIR} | grep -o '[^[:space:]]*$'
+ LANG=C diff -q  ${PASSWDS_CLIENT_NEW_DIR} ${PASSWDS_CLIENT_DB_DIR} | grep -o '[^[:space:]]*$' | uniq
 

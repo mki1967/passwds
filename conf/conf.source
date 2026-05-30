@@ -1,3 +1,6 @@
+# Server configuration:
+  export PASSWDS_SERVER_PASSWD="openssl passwd -6"
+
 # Server and Client configuration:
   export PASSWDS_SERVER_DIR="${PASSWDS_BASE}/server"
   export PASSWDS_SERVER_DB_DIR="${PASSWDS_SERVER_DIR}/database"

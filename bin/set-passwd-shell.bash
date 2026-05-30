@@ -30,7 +30,8 @@ echo
 echo 'Wprowadź i powtórz nowe hasło:'
 echo
 stty -echo;
-openssl passwd -6 > "${PASSWDS_SERVER_DB_DIR}/${1}";
+# openssl passwd -6 > "${PASSWDS_SERVER_DB_DIR}/${1}";
+${PASSWDS_SERVER_PASSWD} > "${PASSWDS_SERVER_DB_DIR}/${1}";
 if [[ $? != 0 ]];
 then
  echo
