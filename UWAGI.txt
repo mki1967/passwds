@@ -1,0 +1,42 @@
+
+# Generowanie sztucznych kluczy ssh:
+ for ((i=100; i<120; i++));do  ssh-keygen -f ${i}; done
+
+# Sprawdzanie nowych lub zmienionych plików np. "*.pub":
+ LANG=C diff -q keys/ keys2/ | grep '.*\.pub' -o
+
+
+
+### Z Gemini: ###
+
+
+# czy istnieje użytkownik:
+
+if getent passwd janek > /dev/null 2>&1; then
+    echo "Użytkownik istnieje, można ustawiać hasło."
+else
+    echo "Użytkownik nie istnieje! Trzeba go najpierw stworzyć."
+fi
+
+
+# Tworzenie nowego z zablokowanym logowaniem:
+sudo useradd -m -p '!' janek         # -m tworzy `/home/janek`
+# albo:
+sudo useradd -p '!' janek
+
+# Generowanie hasła:
+openssl passwd -6 "MojeSuperTajneHaslo123"
+
+# Ustawianie (zahaszowanego) hasła:
+echo 'janek:$6$VbG9Y7xz$8fK3m...długi_ciąg_znaków...' | sudo chpasswd -e
+
+
+
+
+# Eksperymenty na `lab3`
+
+# Tworzenie kontenera `passwd`
+kik@lab3:~$ incus launch images:debian/12 passwd
+
+# na kontenerze:
+
