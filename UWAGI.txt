@@ -30,7 +30,9 @@ openssl passwd -6 "MojeSuperTajneHaslo123"
 # Ustawianie (zahaszowanego) hasła:
 echo 'janek:$6$VbG9Y7xz$8fK3m...długi_ciąg_znaków...' | sudo chpasswd -e
 
-
+# dodawanie sudoers bez hasła
+# W pliku /etc/sudoers (edytowanym przez sudo visudo) dodajesz wtedy np:
+%password-changers ALL=(ALL) NOPASSWD: /usr/bin/passwd [a-zA-Z0-9]*
 
 
 # Eksperymenty na `lab3`
