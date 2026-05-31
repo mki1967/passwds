@@ -17,21 +17,31 @@ ${PASSWDS_CLIENT_RSYNC}
 for IDX in $(LANG=C diff -q  ${PASSWDS_CLIENT_NEW_DIR} ${PASSWDS_CLIENT_DB_DIR} | grep -o '[^[:space:]]*$' | uniq);
 do
   USERNAME=$(username ${IDX});
-  if ! getent passwd ${USERNAME} > /dev/null 2>&1;
+  PASSWORD=$(cat "${PASSWDS_CLIENT_NEW_DIR}/${IDX}");
+  TEST_PASSWORD=$(echo ${PASSWORD} | grep -E '^\$6\$[a-zA-Z0-9./]{1,16}\$[a-zA-Z0-9./]{86}$' );
+  #  echo "TEST_PASSWORD = ${TEST_PASSWORD}";
+  if [ "${TEST_PASSWORD}" = "${PASSWORD}" ]; # `[` nie obsługuje globbingu
   then
-    # Użytkownik nie istnieje! Trzeba go najpierw stworzyć:"
-    # echo "sudo useradd -m -p '!' ${USERNAME}";   # TWORZYMY
-    # albo (jeśli nie potrzebuje katalogu domowego):"
-    echo "sudo useradd -p '!' ${USERNAME}";      # TWORZYMY BEZ HOME
-    # albo nie chcemy nowych:
-    # IGNORE_NEW_USER=true;                        # INGNORUJEMY
-  fi
-  if [[ ! -v IGNORE_NEW_USER ]];
-  then
-    PASSWORD=$(cat "${PASSWDS_CLIENT_NEW_DIR}/${IDX}");
-    TEST_PASSWORD=$(echo ${PASSWORD} | grep -E '^\$6\$[a-zA-Z0-9./]{1,16}\$[a-zA-Z0-9./]{86}$' );
-    echo "TEST_PASSWORD = ${TEST_PASSWORD}";
-    echo "echo '${USERNAME}:${PASSWORD}' | sudo chpasswd -e";
+    if ! getent passwd ${USERNAME} > /dev/null 2>&1;
+    then
+      # Użytkownik nie istnieje! Trzeba go najpierw stworzyć:"
+      # echo "sudo useradd -m -p '!' ${USERNAME}";   # TWORZYMY
+      # albo (jeśli nie potrzebuje katalogu domowego):"
+      echo "sudo useradd -p '!' ${USERNAME}";      # TWORZYMY BEZ HOME
+      # albo nie chcemy nowych:
+      # IGNORE_NEW_USER=true;                        # INGNORUJEMY
+    fi
+    if [[ ! -v IGNORE_NEW_USER ]];
+    then
+      echo "echo '${USERNAME}:${PASSWORD}' | sudo chpasswd -e";
+    else
+      unset  IGNORE_NEW_USER; # for next iteration
+      echo "# NO USER ${USERNAME}: ${PASSWDS_CLIENT_NEW_DIR}/${IDX}"
+      rm ${PASSWDS_CLIENT_NEW_DIR}/${IDX}; # do not add to database
+    fi;
+  else
+    echo "# BAD: ${PASSWDS_CLIENT_NEW_DIR}/${IDX}"
+    rm ${PASSWDS_CLIENT_NEW_DIR}/${IDX}; # do not add to database
   fi;
 done;
 
