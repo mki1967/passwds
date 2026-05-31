@@ -31,6 +31,8 @@ openssl passwd -6 "MojeSuperTajneHaslo123"
 echo 'janek:$6$VbG9Y7xz$8fK3m...długi_ciąg_znaków...' | sudo chpasswd -e
 
 # dodawanie sudoers bez hasła
+# Pamiętaj, aby dodać swoich użytkowników do tej grupy:
+sudo usermod -aG password-changers nazwa_użytkownika.
 # W pliku /etc/sudoers (edytowanym przez sudo visudo) dodajesz wtedy np:
 %password-changers ALL=(ALL) NOPASSWD: /usr/bin/passwd [a-zA-Z0-9]*
 
