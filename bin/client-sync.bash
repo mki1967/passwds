@@ -13,6 +13,27 @@ ${PASSWDS_CLIENT_RSYNC}
 
 # TODO: find the new or changed positions and update the passwords and database 
 
-# find new or changed elements
- LANG=C diff -q  ${PASSWDS_CLIENT_NEW_DIR} ${PASSWDS_CLIENT_DB_DIR} | grep -o '[^[:space:]]*$' | uniq
+# Update users and passwords for new or changed elements:
+for IDX in $(LANG=C diff -q  ${PASSWDS_CLIENT_NEW_DIR} ${PASSWDS_CLIENT_DB_DIR} | grep -o '[^[:space:]]*$' | uniq);
+do
+  USERNAME=$(username ${IDX});
+  if ! getent passwd ${USERNAME} > /dev/null 2>&1;
+  then
+    # Użytkownik nie istnieje! Trzeba go najpierw stworzyć:"
+    # echo "sudo useradd -m -p '!' ${USERNAME}";   # TWORZYMY
+    # albo (jeśli nie potrzebuje katalogu domowego):"
+    echo "sudo useradd -p '!' ${USERNAME}";      # TWORZYMY BEZ HOME
+    # albo nie chcemy nowych:
+    # IGNORE_NEW_USER=true;                        # INGNORUJEMY
+  fi
+  if [[ ! -v IGNORE_NEW_USER ]];
+  then
+    PASSWORD=$(cat "${PASSWDS_CLIENT_NEW_DIR}/${IDX}");
+    TEST_PASSWORD=$(echo ${PASSWORD} | grep -E '^\$6\$[a-zA-Z0-9./]{1,16}\$[a-zA-Z0-9./]{86}$' );
+    echo "TEST_PASSWORD = ${TEST_PASSWORD}";
+    echo "echo '${USERNAME}:${PASSWORD}' | sudo chpasswd -e";
+  fi;
+done;
 
+# Update database with new files:
+rsync -a  "${PASSWDS_CLIENT_NEW_DIR}/" "${PASSWDS_CLIENT_DB_DIR}/"

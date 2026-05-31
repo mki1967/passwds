@@ -27,3 +27,8 @@
   export PASSWDS_CLIENT_RSYNC=${PASSWDS_CLIENT_LOCAL_RSYNC} # useful for local tests
 #  export PASSWDS_CLIENT_RSYNC=${PASSWDS_CLIENT_SSH_RSYNC}
 
+# `username` outputs user name for password file name in parameter ${1}  
+function username() { 
+    USERNAME="u_${1}" # DEFINE YOUR OWN TEMPLATE HERE ! 
+    echo ${USERNAME}
+}
