@@ -34,12 +34,12 @@ stty -echo;
 ${PASSWDS_SERVER_PASSWD} > "${PASSWDS_SERVER_DB_DIR}/${1}";
 if [[ $? != 0 ]];
 then
+ stty echo; # important for local tests
  echo
  echo "*** Błąd przy wprowadzeniu i powtórzeniu hasła !!! ***"
  echo
  exit ;
 fi
 stty echo;
-
 echo "Nowe hasło zostało wprowadzone do serwera."
 echo "Na docelowych maszynach zostanie ustawione przy następnej synchronizacji."

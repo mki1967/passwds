@@ -14,7 +14,7 @@ ${PASSWDS_CLIENT_RSYNC}
 # TODO: find the new or changed positions and update the passwords and database 
 
 # Update users and passwords for new or changed elements:
-for IDX in $(LANG=C diff -q  ${PASSWDS_CLIENT_NEW_DIR} ${PASSWDS_CLIENT_DB_DIR} | grep -o '[^[:space:]]*$' | uniq);
+for IDX in $(LANG=C diff -q  ${PASSWDS_CLIENT_NEW_DIR} ${PASSWDS_CLIENT_DB_DIR} | grep -o '\([[:alnum:]_]*\ differ$\)\|\([[:alnum:]_]*$\)' | grep -o '^[[:alnum:]_]*');
 do
   USERNAME=$(username ${IDX});
   PASSWORD=$(cat "${PASSWDS_CLIENT_NEW_DIR}/${IDX}");
