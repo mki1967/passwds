@@ -32,3 +32,14 @@ function username() {
     USERNAME="u_${1}" # DEFINE YOUR OWN TEMPLATE HERE ! 
     echo ${USERNAME}
 }
+
+# Path to log file
+export PASSWDS_LOG="${PASSWDS_BASE}/var/passwds.log"
+
+# Store log message
+function passwds_log() {
+    mkdir -p $(dirname ${PASSWDS_LOG}); # ensure existence ...
+    # ALL ARGUMENTS IN LOG MESSAGE ! 
+    LOG="$(date --rfc-3339=seconds) $(realpath ${0}): ${*}"
+    echo ${LOG}  >> ${PASSWDS_LOG}
+}
