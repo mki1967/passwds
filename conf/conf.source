@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Server configuration:
   export PASSWDS_SERVER_PASSWD="openssl passwd -6"
 
