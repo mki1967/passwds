@@ -29,14 +29,16 @@
   export PASSWDS_CLIENT_RSYNC=${PASSWDS_CLIENT_LOCAL_RSYNC} # useful for local tests
 #  export PASSWDS_CLIENT_RSYNC=${PASSWDS_CLIENT_SSH_RSYNC}
 
-# `username` outputs user name for password file name in parameter ${1}  
-function username() { 
-    USERNAME="u_${1}" # DEFINE YOUR OWN TEMPLATE HERE ! 
-    echo ${USERNAME}
-}
 
 # Path to log file
-export PASSWDS_LOG="${PASSWDS_BASE}/var/passwds.log"
+  export PASSWDS_LOG="${PASSWDS_BASE}/var/passwds.log"
+
+# `username` outputs user name for password file name in parameter ${1}  
+function username() { 
+    local USERNAME="u_${1}" # DEFINE YOUR OWN TEMPLATE HERE ! 
+    echo ${USERNAME}
+}
+export -f username;
 
 
 # Common scripts
@@ -45,16 +47,17 @@ export PASSWDS_LOG="${PASSWDS_BASE}/var/passwds.log"
 function passwds_log() {
     mkdir -p $(dirname ${PASSWDS_LOG}); # ensure existence ...
     # ALL ARGUMENTS IN LOG MESSAGE ! 
-    LOG="$(date --rfc-3339=seconds) $(realpath ${0}): ${*}"
+    local LOG="$(date --rfc-3339=seconds) $(realpath ${0}): ${*}"
     echo ${LOG}  >> ${PASSWDS_LOG}
 }
-
+export -f passwds_log;
 # Validation scripts
 # Valiate password (script from Gemini):
 is_valid_sha512() {
     local regex='^\$6\$[a-zA-Z0-9./]{1,16}\$[a-zA-Z0-9./]{86}$'
     [[ -n "$1" && "$1" =~ ${regex} ]]
 }
+export -f is_valid_sha512;
 # Vaidate ssh key (script from Gemini):
 is_valid_ssh_pubkey() {
     local key_file="$1"
@@ -77,3 +80,4 @@ is_valid_ssh_pubkey() {
         return 1  # Klucz jest uszkodzony
     fi
 }
+export -f is_valid_sha512;
