@@ -18,9 +18,10 @@ for IDX in $(LANG=C diff -q  ${PASSWDS_CLIENT_NEW_DIR} ${PASSWDS_CLIENT_DB_DIR} 
 do
   USERNAME=$(username ${IDX});
   PASSWORD=$(cat "${PASSWDS_CLIENT_NEW_DIR}/${IDX}");
-  TEST_PASSWORD=$(echo "${PASSWORD}" | grep -E '^\$6\$[a-zA-Z0-9./]{1,16}\$[a-zA-Z0-9./]{86}$' );
+  #  TEST_PASSWORD=$(echo "${PASSWORD}" | grep -E '^\$6\$[a-zA-Z0-9./]{1,16}\$[a-zA-Z0-9./]{86}$' );
   #  passwds_log "TEST_PASSWORD = ${TEST_PASSWORD}";
-  if [[ ( ! ( "${PASSWORD}" = "" ) ) && ( "${TEST_PASSWORD}" = "${PASSWORD}" ) ]]; # `[` nie obsługuje globbingu ale też buntuje się przy `!` i `(`
+  #  if [[ ( ! ( "${PASSWORD}" = "" ) ) && ( "${TEST_PASSWORD}" = "${PASSWORD}" ) ]]; # `[` nie obsługuje globbingu ale też buntuje się przy `!` i `(`
+  if is_valid_sha512 "${PASSWORD}";
   then
     if ! getent passwd ${USERNAME} > /dev/null 2>&1;
     then
