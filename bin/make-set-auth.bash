@@ -10,7 +10,7 @@ source ${BIN}/config-source.bash
 
 # TODO: dokończ przerabianie
 
-for KEY_PATH in $(find ${KEYS_DIR} | sort) ;
+for KEY_PATH in $(find ${KEYS_DIR} -type f | sort) ;
 do
   if is_valid_ssh_pubkey ${KEY_PATH};
   then
