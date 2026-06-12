@@ -6,7 +6,7 @@
 # Server and Client configuration:
   export PASSWDS_SERVER_DIR="${PASSWDS_BASE}/server"
   export PASSWDS_SERVER_DB_DIR="${PASSWDS_SERVER_DIR}/database"
-
+  export PASSWDS_SERVER_TMP_DIR="${PASSWDS_SERVER_DIR}/tmp"
 
 # Client configuration:
   export PASSWDS_CLIENT_DIR="${PASSWDS_BASE}/client"

@@ -26,12 +26,13 @@ then
 fi
 
 mkdir -p ${PASSWDS_SERVER_DB_DIR};
+mkdir -p ${PASSWDS_SERVER_TMP_DIR};
 echo
 echo 'Wprowadź i powtórz nowe hasło:'
 echo
 stty -echo;
 # openssl passwd -6 > "${PASSWDS_SERVER_DB_DIR}/${1}";
-${PASSWDS_SERVER_PASSWD} > "${PASSWDS_SERVER_DB_DIR}/${1}";
+${PASSWDS_SERVER_PASSWD} > "${PASSWDS_SERVER_TMP_DIR}/${1}";
 if [[ $? != 0 ]];
 then
  stty echo; # important for local tests
@@ -41,5 +42,6 @@ then
  exit ;
 fi
 stty echo;
+mv "${PASSWDS_SERVER_TMP_DIR}/${1}" "${PASSWDS_SERVER_DB_DIR}/${1}"
 echo "Nowe hasło zostało wprowadzone do serwera."
 echo "Na docelowych maszynach zostanie ustawione przy następnej synchronizacji."
