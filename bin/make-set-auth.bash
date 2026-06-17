@@ -16,7 +16,7 @@ do
   then
     NAME=$(basename $KEY_PATH);
     NAME=${NAME%.pub};
-    echo -n "command=\"${PASSWDS_BIN}/set-passwd-shell.bash ${NAME},no-port-forwarding,no-X11-forwarding,no-agent-forwarding \""
+    echo -n "command=\"${PASSWDS_BIN}/set-passwd-shell.bash ${NAME},no-port-forwarding,no-X11-forwarding,no-agent-forwarding \" "
     cat ${KEY_PATH};
   fi;
 done
