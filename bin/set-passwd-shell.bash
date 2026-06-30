@@ -19,7 +19,7 @@ echo
 echo '*** Weryfikacja ***'
 echo -n 'podaj swój numer indeksu (6 cyfr): '
 read IDX;
-if [[ ${IDX} != ${1} ]];
+if [[ "${IDX}" != "${1}" ]];
 then
   echo 'To nie jest logowanie przez klucz przypisany do numeru indeksu '${IDX}' !!!';
   exit;
@@ -33,7 +33,7 @@ echo
 stty -echo;
 # openssl passwd -6 > "${PASSWDS_SERVER_DB_DIR}/${1}";
 ${PASSWDS_SERVER_PASSWD} > "${PASSWDS_SERVER_TMP_DIR}/${1}";
-if [[ $? != 0 ]];
+if [[ "$?" != "0" ]];
 then
  stty echo; # important for local tests
  echo
