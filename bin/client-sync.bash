@@ -1,50 +1,62 @@
 #!/bin/bash
 
-
 BIN=$(dirname "$(realpath ${0})")
 source ${BIN}/config-source.bash
 
-# ensure existence of Client's dirs
-mkdir -p ${PASSWDS_CLIENT_NEW_DIR}
-mkdir -p ${PASSWDS_CLIENT_DB_DIR}
+# 1. Tworzymy unikalny katalog dla bufora sieciowego za pomocą PID ($$)
+export PASSWDS_CLIENT_INC_DIR="${PASSWDS_CLIENT_DIR}/incoming_$$"
 
-# run `rsync`:
-${PASSWDS_CLIENT_RSYNC}
+# Upewniamy się, że podstawowe katalogi oraz nasz bufor istnieją
+mkdir -p "${PASSWDS_CLIENT_NEW_DIR}"
+mkdir -p "${PASSWDS_CLIENT_DB_DIR}"
+mkdir -p "${PASSWDS_CLIENT_INC_DIR}"
 
-# TODO: find the new or changed positions and update the passwords and database 
+# 2. BEZPIECZEŃSTWO: Automatyczne sprzątanie bufora niezależnie od wyniku (trap)
+cleanup() {
+    passwds_log "Czyszczenie unikalnego bufora sieciowego: ${PASSWDS_CLIENT_INC_DIR}"
+    rm -rf "${PASSWDS_CLIENT_INC_DIR}"
+}
+trap cleanup EXIT INT TERM
 
-# Update users and passwords for new or changed elements:
-for IDX in $(LANG=C diff -q  ${PASSWDS_CLIENT_NEW_DIR} ${PASSWDS_CLIENT_DB_DIR} | grep -o '\([[:alnum:]_]*\ differ$\)\|\([[:alnum:]_]*$\)' | grep -o '^[[:alnum:]_]*');
+# 3. Dynamiczne przepisanie rsync, aby celował w nasz bezpieczny bufor
+RSYNC_SECURE=$(echo "${PASSWDS_CLIENT_RSYNC}" | sed "s|${PASSWDS_CLIENT_NEW_DIR}/|${PASSWDS_CLIENT_INC_DIR}/|g")
+
+passwds_log "Uruchamianie rsync z flagą --link-dest (ochrona łącza i procesów)..."
+
+# 4. Wywołanie rsync z optymalizacją pod twarde dowiązania (hardlinks)
+${RSYNC_SECURE} --link-dest="${PASSWDS_CLIENT_NEW_DIR}"
+
+# 5. Lokalne, błyskawiczne i atomowe przerzucenie danych do katalogu czystopisu
+passwds_log "Atomowe przerzucenie danych z bufora do czystopisu: ${PASSWDS_CLIENT_NEW_DIR}"
+rsync -a --delete "${PASSWDS_CLIENT_INC_DIR}/" "${PASSWDS_CLIENT_NEW_DIR}/"
+
+# 6. Analiza różnic i aktualizacja bazy/systemu haseł (Twój oryginalny silnik)
+for IDX in $(LANG=C diff -q "${PASSWDS_CLIENT_NEW_DIR}" "${PASSWDS_CLIENT_DB_DIR}" | grep -o '\([[:alnum:]_]*\ differ$\)\|\([[:alnum:]_]*$\)' | grep -o '^[[:alnum:]_]*');
 do
-  USERNAME=$(username ${IDX});
-  PASSWORD=$(cat "${PASSWDS_CLIENT_NEW_DIR}/${IDX}");
-  #  TEST_PASSWORD=$(echo "${PASSWORD}" | grep -E '^\$6\$[a-zA-Z0-9./]{1,16}\$[a-zA-Z0-9./]{86}$' );
-  #  passwds_log "TEST_PASSWORD = ${TEST_PASSWORD}";
-  #  if [[ ( ! ( "${PASSWORD}" = "" ) ) && ( "${TEST_PASSWORD}" = "${PASSWORD}" ) ]]; # `[` nie obsługuje globbingu ale też buntuje się przy `!` i `(`
-  if is_valid_sha512 "${PASSWORD}";
-  then
-    if ! getent passwd ${USERNAME} > /dev/null 2>&1;
-    then
-      # Użytkownik nie istnieje! Trzeba go najpierw stworzyć:"
-      # passwds_log "sudo useradd -m -p '!' ${USERNAME}";   # TWORZYMY
-      # albo (jeśli nie potrzebuje katalogu domowego):"
-      passwds_log "sudo useradd -p '!' ${USERNAME}";      # TWORZYMY BEZ HOME
-      # albo nie chcemy nowych:
-      # IGNORE_NEW_USER=true;                        # INGNORUJEMY
+  USERNAME=$(username "${IDX}")
+  PASSWORD=$(cat "${PASSWDS_CLIENT_NEW_DIR}/${IDX}")
+  
+  # Walidacja hasha przy użyciu bezpiecznej funkcji z config-source.bash
+  if is_valid_sha512 "${PASSWORD}"; then
+    
+    # Sprawdzamy czy użytkownik istnieje w systemie operacyjnym
+    if ! getent passwd "${USERNAME}" > /dev/null 2>&1; then
+      passwds_log "Użytkownik ${USERNAME} nie istnieje. Tworzenie konta bez katalogu domowego."
+      sudo useradd -p '!' "${USERNAME}"
     fi
-    if [[ ! -v IGNORE_NEW_USER ]];
-    then
-      passwds_log "echo '${USERNAME}:${PASSWORD}' | sudo chpasswd -e";
+    
+    if [[ ! -v IGNORE_NEW_USER ]]; then
+      passwds_log "Aktualizacja hasła w /etc/shadow dla: ${USERNAME}"
+      echo "${USERNAME}:${PASSWORD}" | sudo chpasswd -e
+      
+      # PO UDANEJ AKTUALIZACJI: Kopiujemy plik do bazy lokalnej (DB), 
+      # dzięki czemu przy kolejnym obrocie pętli demona diff go pominie!
+      cp "${PASSWDS_CLIENT_NEW_DIR}/${IDX}" "${PASSWDS_CLIENT_DB_DIR}/${IDX}"
     else
-      unset  IGNORE_NEW_USER; # for next iteration
-      passwds_log "# NO USER ${USERNAME}: ${PASSWDS_CLIENT_NEW_DIR}/${IDX}"
-      rm ${PASSWDS_CLIENT_NEW_DIR}/${IDX}; # do not add to database
-    fi;
+      unset IGNORE_NEW_USER
+    fi
+    
   else
-    passwds_log "# BAD: ${PASSWDS_CLIENT_NEW_DIR}/${IDX}"
-    rm ${PASSWDS_CLIENT_NEW_DIR}/${IDX}; # do not add to database
-  fi;
-done;
-
-# Update database with new files:
-rsync -a  "${PASSWDS_CLIENT_NEW_DIR}/" "${PASSWDS_CLIENT_DB_DIR}/"
+    passwds_log "BŁĄD: Wykryto nieprawidłowy lub uszkodzony hash dla indeksu: ${IDX}. Pomijam!"
+  fi
+done
